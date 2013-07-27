@@ -67,7 +67,7 @@ toObservable xs = Observable (\o -> (mapM_ (\ x -> o |> onNext x) xs))
 keys :: Observable Char
 keys = Observable loop
 	   where loop o = do x <- getChar;
-                              o |> onNext x;
-                              loop o
+                             o |> onNext x;
+                             loop o
 
 
