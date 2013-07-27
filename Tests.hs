@@ -19,7 +19,7 @@ main =  do  hSetEcho stdin False
 		         |> map (\x -> x * x)
 		         |> subscribe (Observer (\x -> do clearLine
 		       	                                  x |> show |> putStr;
-		       						              setCursorColumn 0;
-		       		   				              return ()))
+		       		                          setCursorColumn 0;
+		       		                          return ()))
 -}
 
