@@ -45,7 +45,7 @@ instance Monad Observable where
 
 combine :: Observable a -> Observable b -> Observable (Either a b)
 combine xs ys = Observable (\o -> do xs |> subscribe(Observer (\x -> o |> onNext (Left x)));
- 			             ys |> subscribe(Observer (\x -> o |> onNext (Right x))))
+                                     ys |> subscribe(Observer (\x -> o |> onNext (Right x))))
 
 instance MonadPlus Observable where
 	mzero :: Observable a
@@ -55,11 +55,16 @@ instance MonadPlus Observable where
 
 takeWhile :: (a -> Bool) -> Observable a -> Observable a
 takeWhile p xs = do x <- xs;
-		    guard (p x);
-		    return x
+                    guard (p x);
+                    return x
 
 takeUntil :: Observable a -> Observable b -> Observable a
-takeUntil xs sig = combine xs sig |> takeWhile isLeft |> map (\(Left x) -> x) 
+takeUntil sig xs = xs |> combine sig |> takeWhile isLeft |> map (\(Left x) -> x) 
+
+-- TODO: Implement loop to next observable
+window :: Observable a -> Observable b -> Observable (Observable a)
+window closing xs = Observable (\o -> o|> onNext(xs |> takeUntil closing))
+
 
 toObservable :: [a] -> Observable a
 toObservable xs = Observable (\o -> (mapM_ (\ x -> o |> onNext x) xs))
