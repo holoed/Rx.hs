@@ -8,7 +8,7 @@ ys = [1..10] |> toObservable
 
 
 main = ys |> takeUntil (ys |> mfilter (< 5))
-	      |> subscribe (Observer print)
+	  |> subscribe (Observer print)
 
 {-
 main =  do  hSetEcho stdin False
