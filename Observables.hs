@@ -14,6 +14,10 @@ isLeft :: Either a b -> Bool
 isLeft (Left _) = True
 isLeft _        = False
 
+isRight :: Either a b -> Bool
+isRight (Right _) = True
+isRight _        = False
+
 data Observer a = Observer (a -> IO())
 
 data Observable a = Observable (Observer a -> IO ()) 
@@ -58,13 +62,15 @@ takeWhile p xs = do x <- xs;
                     guard (p x);
                     return x
 
+skipWhile :: (a -> Bool) -> Observable a -> Observable a
+skipWhile p xs = takeWhile (not . p) xs 
+
 takeUntil :: Observable a -> Observable b -> Observable a
 takeUntil sig xs = xs |> combine sig |> takeWhile isLeft |> map (\(Left x) -> x) 
 
 -- TODO: Implement loop to next observable
 window :: Observable a -> Observable b -> Observable (Observable a)
 window closing xs = Observable (\o -> o|> onNext(xs |> takeUntil closing))
-
 
 toObservable :: [a] -> Observable a
 toObservable xs = Observable (\o -> (mapM_ (\ x -> o |> onNext x) xs))
