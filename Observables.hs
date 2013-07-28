@@ -39,7 +39,7 @@ merge xss = Observable (\o -> xss |> subscribe (Observer (\xs -> xs |> subscribe
 
 instance Functor Observable where
     fmap :: (a -> b) -> Observable a -> Observable b
-    fmap f m = Observable (\o -> m |> subscribe (Observer (\x -> o |> onNext (f x)))) 
+    fmap = map 
 
 instance Monad Observable where
     (>>=) :: Observable a -> (a -> Observable b) -> Observable b

@@ -19,7 +19,14 @@ assertSubscribe expected xs = do ret <- newIORef []
 tests = TestList ["Subscribe"  ~: assertSubscribe [1..10] ys, 
                   "Unit"       ~: assertSubscribe [42] (unit 42),
                   "Map"        ~: assertSubscribe ([1..10] |> Data.List.map (show)) (ys |> map (show)),
-                  "Take While" ~: assertSubscribe [1..4] (ys |> takeWhile (<5))]
+                  "Take While" ~: assertSubscribe [1..4] (ys |> takeWhile (<5)),
+                  "Merge"      ~: assertSubscribe [1..10] ([[1..5], [6..10]] |> Data.List.map toObservable |> toObservable |> merge),
+                  "Bind"       ~: assertSubscribe [(x,y) | x <- [1..5], y <-[5..10]] (do x <- [1..5] |> toObservable
+                                                                                         y <- [5..10] |> toObservable
+                                                                                         return (x,y)),
+                  "Combine"    ~: assertSubscribe ((Data.List.map (Left) [1..4]) ++ 
+                                                   (Data.List.map (Right) ['a'..'z'])) (combine ([1..4] |> toObservable)
+                                                                                                (['a'..'z'] |> toObservable))]
 
 main = runTestTT tests
 
