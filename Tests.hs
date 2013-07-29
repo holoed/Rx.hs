@@ -23,6 +23,7 @@ tests = TestList ["Subscribe"  ~: assertSubscribe [1..10] ys,
                   "Bind"       ~: assertSubscribe [(x,y) | x <- [1..5], y <-[5..10]] (do x <- [1..5] |> toObservable
                                                                                          y <- [5..10] |> toObservable
                                                                                          return (x,y)),
+                  "mplus"      ~: assertSubscribe [1..10] (([1..5] |> toObservable) `mplus` ([6..10] |> toObservable)),
                   "skipWhile"  ~: assertSubscribe [5..10] (ys |> skipWhile (<5))]
 
 main = runTestTT tests
