@@ -49,7 +49,7 @@ instance MonadPlus Observable where
 	mzero = Observable (\o -> return ())
 	mplus :: Observable a -> Observable a -> Observable a
 	mplus xs ys = Observable (\o -> sequence_ [xs |> subscribe (Observer (\x -> o |> onNext x)), 
-                                             ys |> subscribe (Observer (\x -> o |> onNext x))])
+                                                   ys |> subscribe (Observer (\x -> o |> onNext x))])
 
 takeWhile :: (a -> Bool) -> Observable a -> Observable a
 takeWhile p xs = do x <- xs;
