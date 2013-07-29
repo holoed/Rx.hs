@@ -31,25 +31,18 @@ unit x = Observable (\o -> o |> onNext x)
 subscribe ::  Observer a -> Observable a -> IO()
 subscribe f (Observable m) = m f
 
-map :: (a -> b) -> Observable a -> Observable b
-map f m = Observable (\o -> m |> subscribe(Observer(\x -> o |> onNext (f x))))
-
 merge :: Observable (Observable a) -> Observable a
 merge xss = Observable (\o -> xss |> subscribe (Observer (\xs -> xs |> subscribe o)))
 
 instance Functor Observable where
     fmap :: (a -> b) -> Observable a -> Observable b
-    fmap = map 
+    fmap f m = Observable (\o -> m |> subscribe(Observer(\x -> o |> onNext (f x)))) 
 
 instance Monad Observable where
     (>>=) :: Observable a -> (a -> Observable b) -> Observable b
     m >>= f = merge (fmap f m)
     return :: a -> Observable a
     return = unit 
-
-combine :: Observable a -> Observable b -> Observable (Either a b)
-combine xs ys = Observable (\o -> do xs |> subscribe(Observer (\x -> o |> onNext (Left x)));
-                                     ys |> subscribe(Observer (\x -> o |> onNext (Right x))))
 
 instance MonadPlus Observable where
 	mzero :: Observable a
@@ -64,13 +57,6 @@ takeWhile p xs = do x <- xs;
 
 skipWhile :: (a -> Bool) -> Observable a -> Observable a
 skipWhile p xs = takeWhile (not . p) xs 
-
-takeUntil :: Observable a -> Observable b -> Observable a
-takeUntil sig xs = xs |> combine sig |> takeWhile isLeft |> map (\(Left x) -> x) 
-
--- TODO: Implement loop to next observable
-window :: Observable a -> Observable b -> Observable (Observable a)
-window closing xs = Observable (\o -> o|> onNext(xs |> takeUntil closing))
 
 toObservable :: [a] -> Observable a
 toObservable xs = Observable (\o -> (mapM_ (\ x -> o |> onNext x) xs))
