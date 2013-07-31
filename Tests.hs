@@ -1,7 +1,7 @@
 import Observables
 import Control.Monad
 import System.Console.ANSI
-import Prelude hiding (takeWhile)
+import Prelude hiding (takeWhile, filter)
 import System.IO
 import Data.IORef
 import Test.HUnit
@@ -24,7 +24,9 @@ tests = TestList ["Subscribe"  ~: assertSubscribe [1..10] ys,
                                                                                          y <- [5..10] |> toObservable
                                                                                          return (x,y)),
                   "mplus"      ~: assertSubscribe [1..10] (([1..5] |> toObservable) `mplus` ([6..10] |> toObservable)),
-                  "skipWhile"  ~: assertSubscribe [5..10] (ys |> skipWhile (<5))]
+                  "skipWhile"  ~: assertSubscribe [5..10] (ys |> skipWhile (<5)),
+                  "combine"    ~: assertSubscribe (concat [[Left x, Right x] | x <- [1..10]]) (combine ys ys),
+                  "takeUntil"  ~: assertSubscribe [1..4] (ys |> takeUntil (ys |> filter (==5)))]
 
 main = runTestTT tests
 
