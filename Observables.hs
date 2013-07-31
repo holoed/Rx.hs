@@ -87,7 +87,13 @@ skipUntil sig xs = Observable (\o ->  do ref <- newIORef False
                    where obs ref o = Observer (\x -> do b <- readIORef ref
                                                         if (b) then let (Right v) = x in o|> onNext v
                                                         else if (isLeft x) then writeIORef ref True
-                                                        else return())  
+                                                        else return())
+
+window :: Observable a -> Observable b -> Observable (Observable a)
+window xs close = Observable (\o -> loop o xs)
+                  where loop o xs = do o |> onNext (xs |> takeUntil close)
+                                       loop o (xs |> skipUntil close)
+
 
 
 toObservable :: [a] -> Observable a

@@ -14,6 +14,16 @@ assertSubscribe expected xs = do ret <- newIORef []
                                  actual <- readIORef ret
                                  assertEqual "" expected actual 
 
+assertSubscribeNested :: (Eq b, Show b) => [[b]] -> Observable (Observable b) -> IO()
+assertSubscribeNested expected xss = do ret <- newIORef []
+                                        xss |> subscribe (obs ret)
+                                        actual <- readIORef ret
+                                        assertEqual "" expected actual
+                        where obs ret = Observer (\xs -> do ret2 <- newIORef []
+                                                            xs |> subscribe (Observer (\x -> modifyIORef ret2 (++ [x])))
+                                                            v <- readIORef ret2
+                                                            modifyIORef ret (++ [v]))                                   
+
 
 tests = TestList ["Subscribe"  ~: assertSubscribe [1..10] ys, 
                   "Unit"       ~: assertSubscribe [42] (unit 42),
@@ -27,7 +37,8 @@ tests = TestList ["Subscribe"  ~: assertSubscribe [1..10] ys,
                   "skipWhile"  ~: assertSubscribe [5..10] (ys |> skipWhile (<5)),
                   "combine"    ~: assertSubscribe (concat [[Left x, Right x] | x <- [1..10]]) (combine ys ys),
                   "takeUntil"  ~: assertSubscribe [1..4] (ys |> takeUntil (ys |> filter (==5))),
-                  "skipUntil"  ~: assertSubscribe [5..10] (ys |> skipUntil (ys |> filter (==5)))]
+                  "skipUntil"  ~: assertSubscribe [5..10] (ys |> skipUntil (ys |> filter (==5))),
+                  "window"     ~: assertSubscribeNested [[1..4],[5..10]] (ys |> window (ys |> filter (==5)))]
 
 main = runTestTT tests
 
