@@ -75,11 +75,19 @@ combine xs ys = Observable (\o -> do forkIO $ xs |> subscribe(Observer (\x -> do
 
 takeUntil :: Observable b -> Observable a -> Observable a
 takeUntil sig xs = Observable (\o ->  do ref <- newIORef False
-                                         (combine sig xs) |> subscribe (Observer (\x -> do b <- readIORef ref
-                                                                                           if (b) then return () 
-                                                                                           else if (isLeft x) then writeIORef ref True
-                                                                                           else let (Right v) = x in 
-                                                                                                o|> onNext v)))  
+                                         (combine sig xs) |> subscribe (obs ref o))
+                   where obs ref o = Observer (\x -> do b <- readIORef ref
+                                                        if (b) then return () 
+                                                        else if (isLeft x) then writeIORef ref True
+                                                        else let (Right v) = x in o|> onNext v)  
+
+skipUntil :: Observable b -> Observable a -> Observable a
+skipUntil sig xs = Observable (\o ->  do ref <- newIORef False
+                                         (combine sig xs) |> subscribe (obs ref o))
+                   where obs ref o = Observer (\x -> do b <- readIORef ref
+                                                        if (b) then let (Right v) = x in o|> onNext v
+                                                        else if (isLeft x) then writeIORef ref True
+                                                        else return())  
 
 
 toObservable :: [a] -> Observable a
