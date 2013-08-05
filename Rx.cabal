@@ -4,7 +4,7 @@
 name:                Rx
 version:             0.1.0.0
 synopsis:            Rx Haskell Implementation (Experiment)
--- description:         
+description:         This is an experimental Implementation of the Reactive Framework Library
 license:             Apache-2.0
 license-file:        LICENSE
 author:              Edmondo Pentangelo
@@ -17,4 +17,4 @@ cabal-version:       >=1.8
 library
   exposed-modules:     Observables
   -- other-modules:       
-  build-depends:       base ==4.6.*, ansi-terminal ==0.6.*
+  build-depends:       base ==4.6.*, ansi-terminal ==0.6.*, mtl

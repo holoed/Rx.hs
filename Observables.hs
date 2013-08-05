@@ -1,3 +1,5 @@
+{-# Language InstanceSigs, DoAndIfThenElse #-}
+
 module Observables where
 
 import Prelude hiding (map, takeWhile)

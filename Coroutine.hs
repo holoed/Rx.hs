@@ -1,5 +1,3 @@
-{-# Language FlexibleContexts, Rank2Types, ScopedTypeVariables #-}
-
 module Coroutine where
  
 import Control.Monad 
