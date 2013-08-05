@@ -5,24 +5,26 @@ import Prelude hiding (takeWhile, filter)
 import System.IO
 import Data.IORef
 import Test.HUnit
+import Coroutine
+import Control.Monad.Trans
 
 ys = [1..10] |> toObservable
 
 assertSubscribe :: (Eq b, Show b) => [b] -> Observable b -> IO()
 assertSubscribe expected xs = do ret <- newIORef []
-                                 xs |> subscribe (Observer (\x -> modifyIORef ret (++ [x]) ))
+                                 run $ xs |> subscribe (Observer (\x -> liftIO $ modifyIORef ret (++ [x]) ))
                                  actual <- readIORef ret
                                  assertEqual "" expected actual 
 
 assertSubscribeNested :: (Eq b, Show b) => [[b]] -> Observable (Observable b) -> IO()
 assertSubscribeNested expected xss = do ret <- newIORef []
-                                        xss |> subscribe (obs ret)
+                                        run $ xss |> subscribe (obs ret)
                                         actual <- readIORef ret
                                         assertEqual "" expected actual
-                        where obs ret = Observer (\xs -> do ret2 <- newIORef []
-                                                            xs |> subscribe (Observer (\x -> modifyIORef ret2 (++ [x])))
-                                                            v <- readIORef ret2
-                                                            modifyIORef ret (++ [v]))                                   
+                        where obs ret = Observer (\xs -> do ret2 <- liftIO $ newIORef []
+                                                            xs |> subscribe (Observer (\x -> liftIO $ modifyIORef ret2 (++ [x])))
+                                                            v <- liftIO $ readIORef ret2
+                                                            liftIO $ modifyIORef ret (++ [v]))                                   
 
 
 tests = TestList ["Subscribe"  ~: assertSubscribe [1..10] ys, 
@@ -37,7 +39,7 @@ tests = TestList ["Subscribe"  ~: assertSubscribe [1..10] ys,
                   "skipWhile"  ~: assertSubscribe [5..10] (ys |> skipWhile (<5)),
                   "combine"    ~: assertSubscribe (concat [[Left x, Right x] | x <- [1..10]]) (combine ys ys),
                   "takeUntil"  ~: assertSubscribe [1..4] (ys |> takeUntil (ys |> filter (==5))),
-                  "skipUntil"  ~: assertSubscribe [6..10] (ys |> skipUntil (ys |> filter (==5)))]
+                  "skipUntil"  ~: assertSubscribe [5..10] (ys |> skipUntil (ys |> filter (==5)))]
                   --"window"     ~: assertSubscribeNested [[1..4],[5..10]] (ys |> window (ys |> filter (==5)))]
 
 main = runTestTT tests
