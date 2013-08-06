@@ -92,8 +92,10 @@ skipUntil sig xs = Observable (\o ->  do ref <- liftIO $ newIORef False
                                                         else if (isLeft x) then liftIO $ writeIORef ref True
                                                         else return())
 
-window :: Observable a -> Observable b -> Observable (Observable a)
-window xs close = error "Not implemented yet"
+-- Work in progress,,
+window :: Observable a -> Observable b -> Observable (Observable b)
+window cl xs = Observable (\o -> do o |> onNext (xs |> takeUntil cl)
+                                    o |> onNext (xs |> skipUntil cl))
 
 toObservable :: [a] -> Observable a
 toObservable xs = Observable (\o -> (mapM_ (\ x -> o |> onNext x) xs))

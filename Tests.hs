@@ -39,8 +39,8 @@ tests = TestList ["Subscribe"  ~: assertSubscribe [1..10] ys,
                   "skipWhile"  ~: assertSubscribe [5..10] (ys |> skipWhile (<5)),
                   "combine"    ~: assertSubscribe (concat [[Left x, Right x] | x <- [1..10]]) (combine ys ys),
                   "takeUntil"  ~: assertSubscribe [1..4] (ys |> takeUntil (ys |> filter (==5))),
-                  "skipUntil"  ~: assertSubscribe [5..10] (ys |> skipUntil (ys |> filter (==5)))]
-                  --"window"     ~: assertSubscribeNested [[1..4],[5..10]] (ys |> window (ys |> filter (==5)))]
+                  "skipUntil"  ~: assertSubscribe [5..10] (ys |> skipUntil (ys |> filter (==5))),
+                  "window"     ~: assertSubscribeNested [[1..4],[5..10]] (ys |> window (ys |> filter (==5)))]
 
 main = runTestTT tests
 
